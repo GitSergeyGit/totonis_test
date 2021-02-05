@@ -3,6 +3,7 @@
 namespace app\models;
 
 use yii\db\ActiveRecord;
+use Yii;
 
 /**
  * This is the model class for table "user".
@@ -105,6 +106,21 @@ class User extends \yii\db\ActiveRecord
         ];
     }
 
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            $this->setPassword($this->password);
+
+            if ($this->hasErrors()) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Gets query for [[UserAddresses]].
      *
@@ -113,5 +129,15 @@ class User extends \yii\db\ActiveRecord
     public function getUserAddresses()
     {
         return $this->hasMany(UserAddress::className(), ['user_id' => 'id']);
+    }
+
+    /**
+     * Generates password hash from password and sets it to the model.
+     *
+     * @param string $password
+     */
+    public function setPassword($password)
+    {
+        $this->password = Yii::$app->security->generatePasswordHash($password);
     }
 }
